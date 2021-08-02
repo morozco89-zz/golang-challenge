@@ -1,3 +1,13 @@
+# First Todo: Enabling cache
+
+The first thought that crossed my mind when I looked at the code was that there was no way to keep track of each price "age".
+
+Then I realize maybe map[string]float64 was not the right data structure to represent the cache.
+
+So I created a type (struct CachedPrice) to model the price and the time at which that price was retrieved from actual service.
+
+This time will help me to compare against TransparentCache configured maxAge and determinate weather or not that price was still valid. 
+
 # Golang-Challenge
 Challenge test
 
