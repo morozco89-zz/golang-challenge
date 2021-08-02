@@ -1,10 +1,11 @@
 package sample1
 
 import (
-	"testing"
-	"time"
+	"errors"
 	"fmt"
 	"sort"
+	"testing"
+	"time"
 )
 
 // mockResult has the float64 and err to return
@@ -168,5 +169,27 @@ func TestGetPricesFor_ParallelizeCalls(t *testing.T) {
 	elapsedTime := time.Since(start)
 	if elapsedTime > (1200 * time.Millisecond) {
 		t.Error("calls took too long, expected them to take a bit over one second")
+	}
+}
+
+// Checks if GetPricesFor returns error when any of the items code returns error
+func TestGetPricesFor_ParallelizeCalls_WithError(t *testing.T) {
+	mockService := &mockPriceService{
+		callDelay: time.Second, // each call to external service takes one full second
+		mockResults: map[string]mockResult{
+			"p1": {price: 0, err: nil},
+			"p2": {price: 0, err: errors.New("some error 2")},
+		},
+	}
+	cache := NewTransparentCache(mockService, time.Minute)
+
+	prices, err := cache.GetPricesFor("p1", "p2")
+
+	if len(prices) > 0 {
+		t.Error("prices length should be zero if there is an error in any of the service responses")
+	}
+
+	if err == nil {
+		t.Error("error should not be nil")
 	}
 }
